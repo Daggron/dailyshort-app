@@ -1,45 +1,40 @@
 import React from 'react'
-import { StatusBar , View , Alert , Text, Image , WebView,  ScrollView, FlatList, StyleSheet, Dimensions, TouchableOpacity, Linking } from 'react-native'
+import { StatusBar , ScrollView, View , Alert , Text, Image , StyleSheet, Dimensions, TouchableOpacity, } from 'react-native'
 import Axios from 'axios';
 import LottieView from 'lottie-react-native';
 import Loader from './loader.json'
+import Trending from './Trending'
+import Posts from './Posts'
+import Banner from './Banner'
+
 
 const Home = ()=>{
     const [mainData , setMainData] = React.useState(null);
+    const [trending , setTrending] = React.useState(null);
     const [scrollData , setScrollData] = React.useState(null);
+
     React.useEffect(() => {
         Axios.get('https://dailyshorts.herokuapp.com/news')
         .then(res=>{
-            setMainData(res.data.data.slice(4,100));
+            setMainData(res.data.data.slice(15,100));
+            setTrending(res.data.data.slice(7,15));
+            setScrollData(res.data.data.slice(0,7));
+
         })
         .catch(err=>{
             Alert(err);
         })
     },[])
 
-    if(mainData){
+    if(mainData||trending||scrollData){
         return(
             <View style={style.container}>
+                <ScrollView>
                 <StatusBar hidden={true} />
-                   <FlatList
-                        keyExtractor={(item)=>{item.id}}
-                        data={mainData}
-                        renderItem={({item})=>{
-                                return(
-                                    <View>
-                                    <TouchableOpacity onPress={()=>Linking.openURL(item.url)}>
-                                        <WebView source={{uri : item.image}} />
-                                        <Text style={{margin : 10}}>
-                                            {
-                                                item.title
-                                            }
-                                        </Text>
-                                    </TouchableOpacity>
-                                    </View>
-                                )
-                            }
-                        }
-                    />
+                <Banner banner={scrollData} />
+                <Trending  trending={trending}/>
+                <Posts mainData={mainData} />
+                </ScrollView>
             </View>
         )
     }else{
@@ -57,8 +52,8 @@ const style= StyleSheet.create({
     container:{
        flex : 1,
        justifyContent : "center",
-       alignContent : "center",
-       width : Dimensions.get('window').width
+       width : Dimensions.get('window').width,
+       backgroundColor : "#1b1b1b"
     }
 })
 
